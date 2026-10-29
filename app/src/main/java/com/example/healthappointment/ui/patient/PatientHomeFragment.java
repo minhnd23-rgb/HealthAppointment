@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -47,10 +46,13 @@ public class PatientHomeFragment extends Fragment {
         CatalogViewModel catalogViewModel =
                 new ViewModelProvider(requireActivity()).get(CatalogViewModel.class);
 
-        DepartmentAdapter adapter = new DepartmentAdapter(department ->
-                // Tạm thời: Toast. Ở 4.2 sẽ chuyển sang danh sách bác sĩ của khoa này.
-                Toast.makeText(requireContext(), "Khoa: " + department.name,
-                        Toast.LENGTH_SHORT).show());
+        DepartmentAdapter adapter = new DepartmentAdapter(department -> {
+            Bundle args = new Bundle();
+            args.putInt("departmentId", department.id);
+            args.putString("departmentName", department.name);
+            NavHostFragment.findNavController(this)
+                    .navigate(R.id.action_patientHome_to_doctorList, args);
+        });
         binding.rvDepartments.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.rvDepartments.setAdapter(adapter);
 

@@ -5,7 +5,6 @@
     android:id="@+id/nav_graph"
     app:startDestination="@id/loginFragment">
 
-    <!-- Đăng xuất: về Login và xóa toàn bộ back stack -->
     <action
         android:id="@+id/action_global_login"
         app:destination="@id/loginFragment"
@@ -48,7 +47,17 @@
         android:id="@+id/patientHomeFragment"
         android:name="com.example.healthappointment.ui.patient.PatientHomeFragment"
         android:label="Bệnh nhân"
-        tools:layout="@layout/fragment_patient_home" />
+        tools:layout="@layout/fragment_patient_home">
+        <action
+            android:id="@+id/action_patientHome_to_doctorList"
+            app:destination="@id/doctorListFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/doctorListFragment"
+        android:name="com.example.healthappointment.ui.patient.DoctorListFragment"
+        android:label="Bác sĩ"
+        tools:layout="@layout/fragment_doctor_list" />
 
     <fragment
         android:id="@+id/staffHomeFragment"
