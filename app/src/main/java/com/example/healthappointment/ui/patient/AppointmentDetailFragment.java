@@ -5,19 +5,27 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.healthappointment.data.local.entity.Appointment;
+import com.example.healthappointment.databinding.DialogReviewBinding;
 import com.example.healthappointment.databinding.FragmentAppointmentDetailBinding;
 import com.example.healthappointment.util.StatusUtil;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 public class AppointmentDetailFragment extends Fragment {
 
     private FragmentAppointmentDetailBinding binding;
+    private AppointmentDetailViewModel viewModel;
+    private int appointmentId = -1;
+    private boolean canReviewStatus = false;
+    private boolean alreadyReviewed = false;
 
     @Nullable
     @Override
@@ -31,11 +39,14 @@ public class AppointmentDetailFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        AppointmentDetailViewModel viewModel =
-                new ViewModelProvider(this).get(AppointmentDetailViewModel.class);
+        viewModel = new ViewModelProvider(this).get(AppointmentDetailViewModel.class);
 
-        int appointmentId = requireArguments().getInt("appointmentId", -1);
+        appointmentId = requireArguments().getInt("appointmentId", -1);
         viewModel.start(appointmentId);
+        viewModel.refreshReviewed(appointmentId);
+
+        binding.btnCancel.setOnClickListener(v -> confirmCancel());
+        binding.btnReview.setOnClickListener(v -> showReviewDialog());
 
         viewModel.getDetail().observe(getViewLifecycleOwner(), item -> {
             if (item == null) return;
@@ -54,10 +65,63 @@ public class AppointmentDetailFragment extends Fragment {
             binding.tvStaffNote.setVisibility(hasNote ? View.VISIBLE : View.GONE);
             binding.tvStaffNote.setText(a.staffNote);
 
-            // Các nút sẽ được gắn chức năng ở 6.2, 6.3 và Bước 7
-            binding.btnEdit.setVisibility(StatusUtil.canEdit(a.status) ? View.VISIBLE : View.GONE);
+            // Chức năng sửa lịch hẹn tạm bỏ, nên luôn ẩn nút Sửa
+            binding.btnEdit.setVisibility(View.GONE);
             binding.btnCancel.setVisibility(StatusUtil.canCancel(a.status) ? View.VISIBLE : View.GONE);
-            binding.btnReview.setVisibility(StatusUtil.canReview(a.status) ? View.VISIBLE : View.GONE);
+
+            canReviewStatus = StatusUtil.canReview(a.status);
+            updateReviewButton();
+        });
+
+        viewModel.getReviewed().observe(getViewLifecycleOwner(), reviewed -> {
+            alreadyReviewed = Boolean.TRUE.equals(reviewed);
+            updateReviewButton();
+        });
+
+        viewModel.getMessage().observe(getViewLifecycleOwner(), msg -> {
+            if (msg == null) return;
+            Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show();
+            viewModel.consumeMessage();
+        });
+    }
+
+    private void updateReviewButton() {
+        if (binding == null) return;
+        boolean show = canReviewStatus && !alreadyReviewed;
+        binding.btnReview.setVisibility(show ? View.VISIBLE : View.GONE);
+    }
+
+    private void confirmCancel() {
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Hủy lịch hẹn")
+                .setMessage("Bạn có chắc muốn hủy lịch hẹn này không?")
+                .setNegativeButton("Không", null)
+                .setPositiveButton("Hủy lịch", (dialog, which) -> viewModel.cancel(appointmentId))
+                .show();
+    }
+
+    private void showReviewDialog() {
+        DialogReviewBinding d = DialogReviewBinding.inflate(getLayoutInflater());
+
+        AlertDialog dialog = new MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Đánh giá bác sĩ")
+                .setView(d.getRoot())
+                .setNegativeButton("Đóng", null)
+                .setPositiveButton("Gửi", null)
+                .create();
+        dialog.show();
+
+        // Gắn sau show() để khi chưa chọn sao thì hộp thoại không bị đóng
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+            int rating = (int) d.ratingBar.getRating();
+            if (rating < 1) {
+                Toast.makeText(requireContext(), "Vui lòng chọn số sao", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            String comment = d.etComment.getText() == null
+                    ? "" : d.etComment.getText().toString();
+            viewModel.submitReview(appointmentId, rating, comment);
+            dialog.dismiss();
         });
     }
 
