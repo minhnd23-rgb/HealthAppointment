@@ -4,12 +4,14 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.healthappointment.R;
 import com.example.healthappointment.databinding.FragmentPatientHomeBinding;
@@ -31,6 +33,7 @@ public class PatientHomeFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
         SessionManager session = SessionManager.getInstance(requireContext());
         binding.tvWelcome.setText("Xin chào, " + session.getFullName());
 
@@ -40,11 +43,24 @@ public class PatientHomeFragment extends Fragment {
             authViewModel.logout();
             NavHostFragment.findNavController(this).navigate(R.id.action_global_login);
         });
+
+        CatalogViewModel catalogViewModel =
+                new ViewModelProvider(requireActivity()).get(CatalogViewModel.class);
+
+        DepartmentAdapter adapter = new DepartmentAdapter(department ->
+                // Tạm thời: Toast. Ở 4.2 sẽ chuyển sang danh sách bác sĩ của khoa này.
+                Toast.makeText(requireContext(), "Khoa: " + department.name,
+                        Toast.LENGTH_SHORT).show());
+        binding.rvDepartments.setLayoutManager(new LinearLayoutManager(requireContext()));
+        binding.rvDepartments.setAdapter(adapter);
+
+        catalogViewModel.getDepartments().observe(getViewLifecycleOwner(), adapter::submitList);
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        binding.rvDepartments.setAdapter(null);
         binding = null;
     }
 }
