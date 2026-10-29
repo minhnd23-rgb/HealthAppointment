@@ -2,12 +2,17 @@ package com.example.healthappointment.data.repository;
 
 import android.content.Context;
 
+import androidx.lifecycle.LiveData;
+
 import com.example.healthappointment.data.local.AppDatabase;
 import com.example.healthappointment.data.local.dao.AppointmentDao;
 import com.example.healthappointment.data.local.dao.ReviewDao;
 import com.example.healthappointment.data.local.entity.Appointment;
 import com.example.healthappointment.data.local.entity.Review;
+import com.example.healthappointment.data.local.model.ReviewDetail;
 import com.example.healthappointment.util.StatusUtil;
+
+import java.util.List;
 
 public class ReviewRepository {
 
@@ -18,6 +23,10 @@ public class ReviewRepository {
         AppDatabase db = AppDatabase.getInstance(context.getApplicationContext());
         this.appointmentDao = db.appointmentDao();
         this.reviewDao = db.reviewDao();
+    }
+
+    public LiveData<List<ReviewDetail>> observeByDoctor(int doctorId) {
+        return reviewDao.observeByDoctor(doctorId);
     }
 
     /** PHẢI gọi trên luồng nền. */

@@ -14,17 +14,24 @@ import androidx.navigation.fragment.NavHostFragment;
 import com.example.healthappointment.R;
 import com.example.healthappointment.data.local.entity.Doctor;
 import com.example.healthappointment.data.local.entity.Schedule;
+import com.example.healthappointment.data.local.model.ReviewDetail;
 import com.example.healthappointment.databinding.FragmentDoctorDetailBinding;
+import com.example.healthappointment.databinding.ItemReviewBinding;
 import com.example.healthappointment.databinding.ItemScheduleBinding;
 import com.example.healthappointment.util.DayUtils;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 
 public class DoctorDetailFragment extends Fragment {
+
+    private static final int MAX_REVIEWS_SHOWN = 10;
 
     private FragmentDoctorDetailBinding binding;
 
@@ -57,6 +64,11 @@ public class DoctorDetailFragment extends Fragment {
 
         viewModel.getDoctor().observe(getViewLifecycleOwner(), this::renderDoctor);
         viewModel.getSchedules().observe(getViewLifecycleOwner(), this::renderSchedules);
+
+        DoctorReviewViewModel reviewViewModel =
+                new ViewModelProvider(this).get(DoctorReviewViewModel.class);
+        reviewViewModel.start(doctorId);
+        reviewViewModel.getReviews().observe(getViewLifecycleOwner(), this::renderReviews);
     }
 
     private void renderDoctor(Doctor d) {
@@ -99,6 +111,46 @@ public class DoctorDetailFragment extends Fragment {
             row.tvTime.setText(String.join("   •   ", parts));
             binding.scheduleContainer.addView(row.getRoot());
         }
+    }
+
+    private void renderReviews(List<ReviewDetail> list) {
+        if (binding == null) return;
+        binding.reviewContainer.removeAllViews();
+
+        boolean empty = list == null || list.isEmpty();
+        binding.tvNoReview.setVisibility(empty ? View.VISIBLE : View.GONE);
+
+        if (empty) {
+            binding.tvRatingSummary.setText("Chưa có đánh giá");
+            return;
+        }
+
+        int sum = 0;
+        for (ReviewDetail r : list) sum += r.review.rating;
+        double average = (double) sum / list.size();
+        binding.tvRatingSummary.setText(String.format(Locale.getDefault(),
+                "%.1f ★  (%d đánh giá)", average, list.size()));
+
+        SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+        int shown = Math.min(list.size(), MAX_REVIEWS_SHOWN);
+        for (int i = 0; i < shown; i++) {
+            ReviewDetail r = list.get(i);
+            ItemReviewBinding row = ItemReviewBinding.inflate(
+                    getLayoutInflater(), binding.reviewContainer, false);
+            row.tvReviewer.setText(r.patientName);
+            row.tvStars.setText(stars(r.review.rating));
+            boolean hasComment = r.review.comment != null && !r.review.comment.trim().isEmpty();
+            row.tvComment.setVisibility(hasComment ? View.VISIBLE : View.GONE);
+            row.tvComment.setText(r.review.comment);
+            row.tvDate.setText(format.format(new Date(r.review.createdAt)));
+            binding.reviewContainer.addView(row.getRoot());
+        }
+    }
+
+    private static String stars(int rating) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 1; i <= 5; i++) sb.append(i <= rating ? "★" : "☆");
+        return sb.toString();
     }
 
     @Override
