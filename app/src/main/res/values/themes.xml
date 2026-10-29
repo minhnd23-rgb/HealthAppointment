@@ -1,0 +1,9 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Base.Theme.HealthAppointment" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">#00796B</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorSecondary">#26A69A</item>
+    </style>
+
+    <style name="Theme.HealthAppointment" parent="Base.Theme.HealthAppointment" />
+</resources>
