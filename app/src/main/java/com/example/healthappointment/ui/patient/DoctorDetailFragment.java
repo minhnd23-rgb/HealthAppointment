@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -12,6 +11,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 
+import com.example.healthappointment.R;
 import com.example.healthappointment.data.local.entity.Doctor;
 import com.example.healthappointment.data.local.entity.Schedule;
 import com.example.healthappointment.databinding.FragmentDoctorDetailBinding;
@@ -44,10 +44,12 @@ public class DoctorDetailFragment extends Fragment {
 
         binding.btnBack.setOnClickListener(v ->
                 NavHostFragment.findNavController(this).popBackStack());
-        binding.btnBook.setOnClickListener(v ->
-                // Tạm thời: Toast. Bước 5 sẽ chuyển sang màn hình đặt lịch.
-                Toast.makeText(requireContext(), "Đặt lịch sẽ làm ở Bước 5",
-                        Toast.LENGTH_SHORT).show());
+        binding.btnBook.setOnClickListener(v -> {
+            Bundle b = new Bundle();
+            b.putInt("doctorId", doctorId);
+            NavHostFragment.findNavController(this)
+                    .navigate(R.id.action_doctorDetail_to_booking, b);
+        });
 
         CatalogViewModel viewModel =
                 new ViewModelProvider(requireActivity()).get(CatalogViewModel.class);
@@ -72,7 +74,6 @@ public class DoctorDetailFragment extends Fragment {
         binding.tvNoSchedule.setVisibility(empty ? View.VISIBLE : View.GONE);
         if (empty) return;
 
-        // Gom các ca theo thứ, sắp theo thứ tự 1..7 và giờ bắt đầu
         TreeMap<Integer, List<Schedule>> byDay = new TreeMap<>();
         for (Schedule s : list) {
             List<Schedule> shifts = byDay.get(s.dayOfWeek);

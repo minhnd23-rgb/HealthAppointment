@@ -63,6 +63,14 @@ public class BookingViewModel extends AndroidViewModel {
         }
     }
 
+    /** Xóa toàn bộ lựa chọn (gọi sau khi đặt thành công). Chạy trên main thread. */
+    public void resetSelection() {
+        doctorId = -1;
+        selectedDate = null;
+        selectedSlot = null;
+        slots.setValue(null);
+    }
+
     /** Chọn ngày (yyyy-MM-dd) rồi tải khung giờ. */
     public void selectDate(String date) {
         selectedDate = date;
@@ -72,7 +80,7 @@ public class BookingViewModel extends AndroidViewModel {
 
     public void loadSlots() {
         if (selectedDate == null) return;
-        loading.setValue(true);
+        loading.postValue(true);
         repository.loadSlots(doctorId, selectedDate, new Callback<List<SlotItem>>() {
             @Override public void onSuccess(List<SlotItem> data) {
                 slots.postValue(data);
@@ -96,7 +104,7 @@ public class BookingViewModel extends AndroidViewModel {
                     @Override public void onError(String message) {
                         loading.postValue(false);
                         bookResult.postValue(new BookResult(false, message));
-                        loadSlots(); // Làm mới để khung vừa bị đặt hiện khóa
+                        loadSlots(); // làm mới để khung vừa bị đặt hiện khóa
                     }
                 });
     }
