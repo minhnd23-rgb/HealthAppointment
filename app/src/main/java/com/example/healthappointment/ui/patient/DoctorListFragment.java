@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -13,6 +12,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.example.healthappointment.R;
 import com.example.healthappointment.databinding.FragmentDoctorListBinding;
 
 public class DoctorListFragment extends Fragment {
@@ -43,9 +43,12 @@ public class DoctorListFragment extends Fragment {
                 new ViewModelProvider(requireActivity()).get(CatalogViewModel.class);
         viewModel.setDepartmentId(departmentId);
 
-        DoctorAdapter adapter = new DoctorAdapter(doctor ->
-                // Tạm thời: Toast. Ở 4.3 sẽ mở trang chi tiết bác sĩ.
-                Toast.makeText(requireContext(), doctor.fullName, Toast.LENGTH_SHORT).show());
+        DoctorAdapter adapter = new DoctorAdapter(doctor -> {
+            Bundle b = new Bundle();
+            b.putInt("doctorId", doctor.id);
+            NavHostFragment.findNavController(this)
+                    .navigate(R.id.action_doctorList_to_doctorDetail, b);
+        });
         binding.rvDoctors.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.rvDoctors.setAdapter(adapter);
 

@@ -10,26 +10,35 @@ import androidx.lifecycle.Transformations;
 
 import com.example.healthappointment.data.local.entity.Department;
 import com.example.healthappointment.data.local.entity.Doctor;
+import com.example.healthappointment.data.local.entity.Schedule;
 import com.example.healthappointment.data.repository.DepartmentRepository;
 import com.example.healthappointment.data.repository.DoctorRepository;
+import com.example.healthappointment.data.repository.ScheduleRepository;
 
 import java.util.List;
 
-/** ViewModel cho các màn hình xem danh mục (khoa, bác sĩ). */
+/** ViewModel cho các màn hình xem danh mục: khoa, bác sĩ, chi tiết bác sĩ, lịch làm việc. */
 public class CatalogViewModel extends AndroidViewModel {
 
-    private final DoctorRepository doctorRepository;
     private final LiveData<List<Department>> departments;
+
     private final MutableLiveData<Integer> departmentId = new MutableLiveData<>();
     private final LiveData<List<Doctor>> doctors;
+
+    private final MutableLiveData<Integer> doctorId = new MutableLiveData<>();
+    private final LiveData<Doctor> doctor;
+    private final LiveData<List<Schedule>> schedules;
 
     public CatalogViewModel(@NonNull Application application) {
         super(application);
         DepartmentRepository departmentRepository = new DepartmentRepository(application);
-        doctorRepository = new DoctorRepository(application);
+        DoctorRepository doctorRepository = new DoctorRepository(application);
+        ScheduleRepository scheduleRepository = new ScheduleRepository(application);
+
         departments = departmentRepository.getDepartments();
-        // Mỗi khi departmentId đổi, tự truy vấn lại danh sách bác sĩ
         doctors = Transformations.switchMap(departmentId, doctorRepository::getByDepartment);
+        doctor = Transformations.switchMap(doctorId, doctorRepository::observeById);
+        schedules = Transformations.switchMap(doctorId, scheduleRepository::getByDoctor);
     }
 
     public LiveData<List<Department>> getDepartments() {
@@ -44,5 +53,19 @@ public class CatalogViewModel extends AndroidViewModel {
 
     public LiveData<List<Doctor>> getDoctors() {
         return doctors;
+    }
+
+    public void setDoctorId(int id) {
+        if (doctorId.getValue() == null || doctorId.getValue() != id) {
+            doctorId.setValue(id);
+        }
+    }
+
+    public LiveData<Doctor> getDoctor() {
+        return doctor;
+    }
+
+    public LiveData<List<Schedule>> getSchedules() {
+        return schedules;
     }
 }

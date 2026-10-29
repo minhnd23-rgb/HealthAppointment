@@ -57,7 +57,17 @@
         android:id="@+id/doctorListFragment"
         android:name="com.example.healthappointment.ui.patient.DoctorListFragment"
         android:label="Bác sĩ"
-        tools:layout="@layout/fragment_doctor_list" />
+        tools:layout="@layout/fragment_doctor_list">
+        <action
+            android:id="@+id/action_doctorList_to_doctorDetail"
+            app:destination="@id/doctorDetailFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/doctorDetailFragment"
+        android:name="com.example.healthappointment.ui.patient.DoctorDetailFragment"
+        android:label="Chi tiết bác sĩ"
+        tools:layout="@layout/fragment_doctor_detail" />
 
     <fragment
         android:id="@+id/staffHomeFragment"

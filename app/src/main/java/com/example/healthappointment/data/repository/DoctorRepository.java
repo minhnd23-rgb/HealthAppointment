@@ -21,4 +21,8 @@ public class DoctorRepository {
     public LiveData<List<Doctor>> getByDepartment(int departmentId) {
         return doctorDao.getByDepartment(departmentId);
     }
+
+    public LiveData<Doctor> observeById(int doctorId) {
+        return doctorDao.observeById(doctorId);
+    }
 }
