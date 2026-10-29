@@ -43,6 +43,10 @@ public class PatientHomeFragment extends Fragment {
             NavHostFragment.findNavController(this).navigate(R.id.action_global_login);
         });
 
+        binding.btnHistory.setOnClickListener(v ->
+                NavHostFragment.findNavController(this)
+                        .navigate(R.id.action_patientHome_to_history));
+
         CatalogViewModel catalogViewModel =
                 new ViewModelProvider(requireActivity()).get(CatalogViewModel.class);
 

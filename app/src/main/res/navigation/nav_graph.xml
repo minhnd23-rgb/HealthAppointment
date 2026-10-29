@@ -51,6 +51,9 @@
         <action
             android:id="@+id/action_patientHome_to_doctorList"
             app:destination="@id/doctorListFragment" />
+        <action
+            android:id="@+id/action_patientHome_to_history"
+            app:destination="@id/historyFragment" />
     </fragment>
 
     <fragment
@@ -78,6 +81,22 @@
         android:name="com.example.healthappointment.ui.patient.BookingFragment"
         android:label="Đặt lịch"
         tools:layout="@layout/fragment_booking" />
+
+    <fragment
+        android:id="@+id/historyFragment"
+        android:name="com.example.healthappointment.ui.patient.HistoryFragment"
+        android:label="Lịch sử lịch hẹn"
+        tools:layout="@layout/fragment_history">
+        <action
+            android:id="@+id/action_history_to_appointmentDetail"
+            app:destination="@id/appointmentDetailFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/appointmentDetailFragment"
+        android:name="com.example.healthappointment.ui.patient.AppointmentDetailFragment"
+        android:label="Chi tiết lịch hẹn"
+        tools:layout="@layout/fragment_appointment_detail" />
 
     <fragment
         android:id="@+id/staffHomeFragment"
